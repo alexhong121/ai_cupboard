@@ -1,0 +1,86 @@
+# 範例
+# - model: myapp.person
+
+#   pk: 1
+
+#   fields:
+
+#     first_name: John
+
+#     last_name: Lennon
+
+########## model: users.questions##############
+- model: users.questions
+
+  pk: 1
+
+  fields:
+
+    proposition: 今年貴庚?
+
+- model: users.questions
+
+  pk: 2
+
+  fields:
+
+    proposition: 你身高多少?
+
+- model: users.questions
+
+  pk: 3
+
+  fields:
+
+    proposition: 你體重多少?
+
+########## model: users.questions##############
+- model: systems.Configuration
+
+  pk: 1
+
+  fields:
+
+    drawer_mod: dra
+########## model: access.Features##############
+- model: access.Features
+
+  pk: 1
+
+  fields:
+
+    name: profile
+
+- model: access.Features
+
+  pk: 2
+
+  fields:
+
+    name: INV
+
+- model: access.Features
+
+  pk: 3
+
+  fields:
+
+    name: DRA
+
+- model: access.Features
+
+  pk: 4
+
+  fields:
+
+    name: setting
+########## model: locker.Cabinet##############
+- model: locker.Cabinet
+
+  pk: 1
+
+  fields:
+
+    name: test_001
+    column: 3
+    row: 5
