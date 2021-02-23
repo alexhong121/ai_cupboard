@@ -118,13 +118,13 @@ class Login_validation(APIView):
     
     def post(self, request, format=None):
         result = authenticate(username=request.data.get('username'), password=request.data.get('password'))
+        format=Format()
         if result is not None and result.is_active:
             login(request, result)
             user=User.objects.filter(username=result).first()
             refresh = RefreshToken.for_user(user)
 
-            return Response(content(
-                types="success",
+            return Response(format.content(
                 data={
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
@@ -133,8 +133,7 @@ class Login_validation(APIView):
             ),status=status.HTTP_200_OK)
         else:
 
-            return Response(content(
-               types="error",
+            return Response(format.error(
                message='account is fault' 
             ),status=status.HTTP_200_OK)
     
@@ -142,7 +141,8 @@ class Logout(APIView):
 
     def get(self, request, format=None):
         logout(request)
-        return Response(status=status.HTTP_200_OK)
+        format=Format()
+        return Response(fromat.content(message="logout of the account "),status=status.HTTP_200_OK)
 
 
 class Accounts_validation(APIView):
@@ -150,13 +150,10 @@ class Accounts_validation(APIView):
     def post(self, request, format=None):
         data = JSONParser().parse(request)
         user=User.objects.filter(username=data["params"]['username']).first()
+        format=Format()
         if user is not None:
-            # content={
-            #     "uid":user.id    #id of currnt account
-            # }
 
-            return Response(content(
-                types='success',  # 相应的状态 'success' | "error"
+            return Response(format.content(
                 data={
                     "uid":user.id    #id of currnt account
                 }
@@ -165,10 +162,7 @@ class Accounts_validation(APIView):
             # content={
             #     "message":"account is not existed!!",
             # }
-
-
-            return Response(content(
-                types='error',
+            return Response(format.error(
                 message='account is not existed!!'
                 ),status=status.HTTP_404_NOT_FOUND)
         return Response(status=HTTP_400_BAD_REQUEST)
@@ -194,94 +188,24 @@ class RegistrationApp(APIView):
                 self._serializer=ui_access
 
     @transaction.atomic
-    def create_answer(self):
-        answerData=self._data["answerData"]
-
-        for result in answerData:
-
-            answerdict={
-                "answer":result['answer'],
-                "Profiles_id":self._data['Profiles_id'],
-                "Questions_id":result['Questions_id']
-            }
-
-            quest_answersSerializer=Quest_answersSerializer(data=answerdict)
-            if quest_answersSerializer.is_valid():
-                quest_answersSerializer.save()
-                self._errorsFlag=False
-            else:
-                authUser=User.objects.get(pk=self._data["profilesData"]['AuthUser_id'])
-                profiles=Profiles.objects.get(pk=self._data['Profiles_id'])
-                profiles.delete()
-                authUser.delete()
-                self._errorsFlag=True
-                self._serializer=quest_answersSerializer
-                return False
-
-    @transaction.atomic
-    def create_profiles(self):
-        # 新增 Users
-        profilesData=self._data["profilesData"]
-        
-        profilesSerializer = ProfilesSerializer(data=profilesData)
-
-        if profilesSerializer.is_valid():
-
-            profilesSerializer.save()
-            self._errorsFlag=False
-            self._data.update({'Profiles_id':profilesSerializer.data['id']})
-        else:
-            authUser=User.objects.get(pk=profilesData["AuthUser_id"])
-            authUser.delete()
-            self._errorsFlag=True
-            self._serializer=profilesSerializer
-
-            return False
-        transaction.on_commit(self.create_answer)
-
-    @transaction.atomic
-    def create_authUser(self):
-        authUserSerializer=AuthUserSerializer(data=self._data["authUserData"])
-
-        if authUserSerializer.is_valid():
-            authUserSerializer.save()
-
-              
-        else:
-            self._errorsFlag=True
-            self._serializer=authUserSerializer
-            return False
-
-        # transaction.on_commit(self.create_profiles)
-
-    @transaction.atomic
     def registration_flow(self):
         
-        # self.create_authUser()
-        #initital access UI
-        # if self._data['Profiles_id']:
-        #     self.initial_access()
-        # else:
-        #     return False
-        #create_authUser->create_profiles->create_answer
         sid = transaction.savepoint()
-        print(sid)
+
         try:
             # create_authUser
-            authUserSerializer=AuthUserSerializer(data=self._data["authUserData"])
-            if authUserSerializer.is_valid():
-                authUserSerializer.save()
+            self._serializer=AuthUserSerializer(data=self._data["authUserData"])
+            if self._serializer.is_valid():
+                self._serializer.save()
             else:
-                self._serializer=authUserSerializer
                 raise ValueError("有問題啦")
             # create_profiles
-            self._data["profilesData"].setdefault("AuthUser_id",authUserSerializer.data['id'])    
-            profilesSerializer = ProfilesSerializer(data=self._data["profilesData"])
+            self._data["profilesData"].update({"AuthUser_id":authUserSerializer.data['id']})    
+            self._serializer = ProfilesSerializer(data=self._data["profilesData"])
 
-            if profilesSerializer.is_valid():
-                profilesSerializer.save()
+            if self._serializer.is_valid():
+                self._serializer.save()
             else:
-                self._serializer=profilesSerializer
                 raise ValueError("pro have problems")
             # create_answer
             self._data.update({'Profiles_id':profilesSerializer.data['id']})
@@ -294,11 +218,10 @@ class RegistrationApp(APIView):
                     "Questions_id":result['Questions_id']
                 }
 
-                quest_answersSerializer=Quest_answersSerializer(data=answerdict)
-                if quest_answersSerializer.is_valid():
-                    quest_answersSerializer.save()
+                self._serializer=Quest_answersSerializer(data=answerdict)
+                if self._serializer.is_valid():
+                    self._serializer.save()
                 else:
-                    self._serializer=quest_answersSerializer
                     raise ValueError("pro have problems")
 
             transaction.savepoint_commit(sid)
@@ -306,6 +229,7 @@ class RegistrationApp(APIView):
             self._errorsFlag=True
             transaction.savepoint_rollback(sid)
         except:
+            self._errorsFlag=True
             transaction.savepoint_rollback(sid)
 
     def post(self, request, format=None):
@@ -325,26 +249,22 @@ class RegistrationApp(APIView):
                                 'username':jsonData['params']['AuthUser_id']['username'],
                                 'password':make_password(jsonData['params']['AuthUser_id']['password'])
                             }
-            
         }
     
         self.registration_flow()
-        format=Format(data={
-            "uid":self._data["profilesData"]['AuthUser_id']
-        },
-        message=self._serializer.errors)
+
+        format=Format()
+
         if self._errorsFlag:
-            return Response(format.error(),status=status.HTTP_400_BAD_REQUEST)
+            return Response(format.error(
+                message=self._serializer.errors
+            ),status=status.HTTP_400_BAD_REQUEST)
         else:
-            # return Response(content(
-            #     types='success',
-            #     data={
-            #         # "uid":self._data["profilesData"]['AuthUser_id']
-            #         },
-            #     message="The data is created"
-            # ),status=status.HTTP_201_CREATED)
-            
-            return Response(format.content(),status=status.HTTP_201_CREATED)
+            return Response(format.content(
+                data={
+                    "uid":self._data["profilesData"]['AuthUser_id']
+                },
+                message="the data is created successfully!!"),status=status.HTTP_201_CREATED)
 
 
 class AccountsDetail(APIView):
