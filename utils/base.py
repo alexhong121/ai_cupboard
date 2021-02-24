@@ -7,7 +7,7 @@ from django.http import Http404
 #    'message':None     # 错误信息
 # }
 
-def get_profiles_object(pk):
+def filter_profiles_object(pk):
     try:
         return Profiles.objects.filter(AuthUser_id=pk)
     except Profiles.DoesNotExist:
@@ -22,7 +22,13 @@ def content(types=None,data=None,message=None):
 
     return CONTENT_STRUCTURE
 
-class Format(object):
+def get_model_object(pk,model):
+    try:
+        return model.objects.get(pk=pk)
+    except model.DoesNotExist:
+        raise Http404("%s does not exist" % model)
+
+class DataFormat(object):
     def __init__(self):
         self._CONTENT_STRUCTURE={
             'type': None,  # 相应的状态 'success' | "error"

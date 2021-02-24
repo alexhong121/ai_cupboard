@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.models import Profiles,Departments,Questions,Quest_answers
-from utils.base import Format,content
+from utils.base import DataFormat,content
 from django.contrib.auth.models import User
 
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer

@@ -12,7 +12,7 @@ from access.serializers import Locker_accSerializers,UI_accessSerializers
 from locker.models import Lockers
 from django.contrib.auth.models import User
 
-from utils.base import get_profiles_object,content
+from utils.base import filter_profiles_object,content
 
 # Create your views here.
 def newLocker_access(users_id):
@@ -78,7 +78,7 @@ class Locker_accDetail(APIView):
 class Per_UIAccDetail(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request,pk,format=None):
-        profiles=get_profiles_object(pk).first()
+        profiles=filter_profiles_object(pk).first()
         
         if profiles:
             ui_access=UI_access.objects.filter(Profiles_id=profiles.id)
