@@ -6,7 +6,7 @@ from locker.models import Lockers
 
 # Create your models here.
 
-class Features(ModelTemplate):
+class Functions(ModelTemplate):
     active=models.BooleanField(default=True)
     name=models.CharField(max_length=50,default=None)
 
@@ -14,9 +14,9 @@ class Features(ModelTemplate):
         ordering = ['created_date']
 
 class UI_access(ModelTemplate):
-    path=models.CharField(max_length=100,default=None)
+    name=models.CharField(max_length=100,default=None)
     Profiles_id=models.ForeignKey(Profiles,on_delete=models.CASCADE)
-    Features_id=models.ForeignKey(Features,on_delete=models.CASCADE)
+    Functions_id=models.ForeignKey(Functions,on_delete=models.CASCADE,null=True)
     perm_read=models.BooleanField(default=True)
     perm_unlink=models.BooleanField(default=True)
     perm_write=models.BooleanField(default=True)
@@ -26,19 +26,18 @@ class UI_access(ModelTemplate):
         ordering = ['created_date']
 
 class Locker_access(ModelTemplate):
-    Profiles_ids=models.ManyToManyField(Profiles,blank=True)
-    # Product_cate=models.ForeignKey(Product_category,on_delete=models.CASCADE)
+    Profiles_ids=models.ForeignKey(Profiles,on_delete=models.CASCADE)
     active=models.BooleanField(default=True)
     Lockers_ids=models.ManyToManyField(Lockers,blank=True)
 
     class Meta:
         ordering=['created_date']
 
-# class category_access(ModelTemplate):
-#     Profiles_ids=models.ManyToManyField(Profiles,blank=True)
-#     # Product_cate=models.ForeignKey(Product_category,on_delete=models.CASCADE)
-#     active=models.BooleanField(default=True)
-#     Lockers_ids=models.ManyToManyField(Lockers,blank=True)
+class category_access(ModelTemplate):
+    Profiles_ids=models.ManyToManyField(Profiles,blank=True)
+    Pro_cate_id=models.ForeignKey(Product_category,on_delete=models.CASCADE)
+    active=models.BooleanField(default=True)
+    Lockers_ids=models.ManyToManyField(Lockers,blank=True)
 
-#     class Meta:
-#         ordering=['created_date']
+    class Meta:
+        ordering=['created_date']

@@ -1,99 +1,108 @@
 
 
 ui=[{
-    'path':'/user001',
+    'name':'個人資訊',
     'Profiles_id':'',
-    'Features_id':'1',
+    'Functions_id':'1',
     'perm_read':True,
     'perm_unlink':False,
     'perm_write':True,
     'perm_create':False
 },
 {
-    'path':'/user002',
+    'name':'產品分類',
     'Profiles_id':'',
-    'Features_id':'1',
+    'Functions_id':'1',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/inv001',
+    'name':'產品搜尋',
     'Profiles_id':'',
-    'Features_id':'2',
+    'Functions_id':'2',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/inv002',
+    'name':'新增產品',
     'Profiles_id':'',
-    'Features_id':'2',
+    'Functions_id':'2',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/inv003',
+    'name':'產品',
     'Profiles_id':'',
-    'Features_id':'2',
+    'Functions_id':'2',
+    'perm_read':True,
+    'perm_unlink':False,
+    'perm_write':False,
+    'perm_create':False
+},
+{
+    'name':'異動歷史搜尋',
+    'Profiles_id':'',
+    'Functions_id':'2',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/dra001',
+    'name':'抽屜',
     'Profiles_id':'',
-    'Features_id':'3',
+    'Functions_id':'3',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/set001',
+    'name':'抽屜管理',
     'Profiles_id':'',
-    'Features_id':'4',
+    'Functions_id':'4',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/set002',
+    'name':'權限',
     'Profiles_id':'',
-    'Features_id':'4',
+    'Functions_id':'4',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/set003',
+    'name':'帳戶',
     'Profiles_id':'',
-    'Features_id':'4',
+    'Functions_id':'4',
     'perm_read':False,
     'perm_unlink':True,
     'perm_write':True,
     'perm_create':True
 },
 {
-    'path':'/set004',
+    'name':'系統',
     'Profiles_id':'',
-    'Features_id':'4',
+    'Functions_id':'4',
     'perm_read':False,
     'perm_unlink':False,
     'perm_write':False,
     'perm_create':False
 },
 {
-    'path':'/set005',
+    'name':'基本單位',
     'Profiles_id':'',
-    'Features_id':'4',
+    'Functions_id':'4',
     'perm_read':False,
     'perm_unlink':True,
     'perm_write':True,

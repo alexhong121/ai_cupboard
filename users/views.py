@@ -162,8 +162,8 @@ class RegistrationApp(APIView):
         self._serializer={}
         self._data={}
 
-    def initial_access(self):
-        
+    def initial_UIaccess(self):
+
         for record in ui:
             record.update({'Profiles_id':self._data['Profiles_id']})
             ui_access=UI_accessSerializers(data=record)
@@ -177,10 +177,10 @@ class RegistrationApp(APIView):
     @transaction.atomic
     def registration_flow(self):
         """
-        
+        registration
         """
         sid = transaction.savepoint()
-
+        
         try:
             # create_authUser
             self._serializer=AuthUserSerializer(data=self._data["authUserData"])
@@ -189,15 +189,17 @@ class RegistrationApp(APIView):
             else:
                 raise ValueError("AuthUser have problems")
             # create_profiles
-            self._data["profilesData"].update({"AuthUser_id":authUserSerializer.data['id']})    
+            self._data["profilesData"].update({"AuthUser_id":self._serializer.data['id']})   
+            
             self._serializer = ProfilesSerializer(data=self._data["profilesData"])
-
+            
             if self._serializer.is_valid():
                 self._serializer.save()
             else:
                 raise ValueError("profiles have problems")
             # create_answer
-            self._data.update({'Profiles_id':profilesSerializer.data['id']})
+
+            self._data.update({'Profiles_id':self._serializer.data['id']})
 
             for result in self._data["answerData"]:
 
@@ -212,12 +214,16 @@ class RegistrationApp(APIView):
                     self._serializer.save()
                 else:
                     raise ValueError("Quest_answers have problems")
+            # initial_UIaccess    
+            self.initial_UIaccess()
 
             transaction.savepoint_commit(sid)
         except ValueError as e:
             self._errorsFlag=True
+            print(e)
             transaction.savepoint_rollback(sid)
-        except:
+        except Exception as e:
+            print(e)
             self._errorsFlag=True
             transaction.savepoint_rollback(sid)
 
@@ -239,9 +245,9 @@ class RegistrationApp(APIView):
                                 'password':make_password(jsonData['params']['AuthUser_id']['password'])
                             }
         }
-    
+        # 註冊
         self.registration_flow()
-
+        
         dataFormat=DataFormat()
 
         if self._errorsFlag:
@@ -395,13 +401,7 @@ class DepartmentsDetail(APIView):
 
     def get(self, request, pk, format=None):
         departments = self.get_object(pk)
-        serializer = DepartmentsSerializer(departments)
-
-        # content={
-        #     'type': 'success',  # 相应的状态 'success' | "error"
-        #     'data': serializer.data, # 主要的数据 [ ] | { }
-        #     'message':None     # 错误信息
-        # }   
+        serializer = DepartmentsSerializer(departments)\
 
         return Response(content(
             types='success',  # 相应的状态 'success' | "error"

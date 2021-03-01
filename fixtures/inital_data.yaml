@@ -42,8 +42,8 @@
   fields:
 
     drawer_mod: dra
-########## model: access.Features##############
-- model: access.Features
+########## model: access.Functions##############
+- model: access.Functions
 
   pk: 1
 
@@ -51,7 +51,7 @@
 
     name: profile
 
-- model: access.Features
+- model: access.Functions
 
   pk: 2
 
@@ -59,7 +59,7 @@
 
     name: INV
 
-- model: access.Features
+- model: access.Functions
 
   pk: 3
 
@@ -67,7 +67,7 @@
 
     name: DRA
 
-- model: access.Features
+- model: access.Functions
 
   pk: 4
 

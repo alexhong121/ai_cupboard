@@ -99,6 +99,8 @@ class Per_UIAccDetail(APIView):
 class UI_acclist(APIView):
     permission_classes = [IsAuthenticated]
 
+    
+
 
     def get(self, request, format=None):
         ui_access=UI_access.objects.all()
@@ -145,6 +147,7 @@ class UI_accDetail(APIView):
 
 class GetAccessList(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request,format=None):
         data = JSONParser().parse(request)
         uid=data['params']['uid']
