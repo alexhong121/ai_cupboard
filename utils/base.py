@@ -1,12 +1,6 @@
 from users.models import Profiles
 from django.http import Http404
 
-# CONTENT_STRUCTURE={
-#    'type': None,  # 相应的状态 'success' | "error"
-#    'data': None, # 主要的数据 [ ] | { }
-#    'message':None     # 错误信息
-# }
-
 def filter_profiles_object(pk):
     try:
         return Profiles.objects.filter(AuthUser_id=pk)
@@ -36,7 +30,7 @@ class DataFormat(object):
             'message':None     # 错误信息
         }
 
-    def content(self,data=None,message=None):
+    def success(self,data=None,message=None):
 
         self._CONTENT_STRUCTURE.update({
             'type':'success',

@@ -9,13 +9,13 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('', views.Userslist.as_view()),    #users list
     path('<int:pk>',views.UsersDatail.as_view()),
-    path('login', views.Login_validation.as_view()),     #login
-    path('logout',views.Logout.as_view()),
-    path('registration', views.RegistrationApp.as_view()),  #註冊
-    path('psforget',views.Accounts_validation.as_view()),   #forget password V
-    path('questions',views.Questionslist.as_view()), # questions    
-    path('authUser/uid=<int:pk>',views.AccountsDetail.as_view()),   #修改密碼 
-    path('questions/validation',views.Quest_answer_validation.as_view()), #validation problems
+    path('login', views.LoginOutAccountView.as_view()),     #login
+    path('logout',views.LoginOutAccountView.as_view()),
+    path('registration', views.RegistrationView.as_view()),  #註冊
+    path('psforget',views.VerifyAccountView.as_view()),   #forget password V
+    path('questions',views.QuestionslistView.as_view()), # questions    
+    path('authUser/uid=<int:pk>',views.RestPasswordView.as_view()),   #修改密碼 
+    path('questions/validation',views.VerifyAnswerView.as_view()), #validation problems
     path('departments', views.Departmentslist.as_view()),# 部門list
     path('departments/<int:pk>',views.DepartmentsDetail.as_view()),
     path('uid=<int:pk>', views.ProfilesDetail.as_view()),  #profiles detail

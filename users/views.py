@@ -1,3 +1,4 @@
+import logging
 
 from django.db import transaction
 from django.shortcuts import render
@@ -21,6 +22,7 @@ from rest_framework import status
 from users.models import Profiles,Departments,Questions,Quest_answers
 from users.serializers import ProfilesSerializer,AuthUserSerializer,Quest_answersSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer
 
+from users.core import check_login,verify_account,RegisterAccount,reset_password,check_answer
 from utils.base import filter_profiles_object,content,DataFormat,get_model_object
 from access.data import ui
 from access.serializers import UI_accessSerializers
@@ -100,204 +102,78 @@ class ProfilesDetail(APIView):
             data=serializer.data
             ),status=status.HTTP_200_OK)
 
-class Login_validation(APIView):
-    """
-    login
-    """
+class LoginOutAccountView(APIView):
+
     def post(self, request, format=None):
-        result = authenticate(username=request.data.get('username'), password=request.data.get('password'))
-        dataFormat=DataFormat()
-        if result is not None and result.is_active:
-            login(request, result)
-            user=User.objects.filter(username=result).first()
-            refresh = RefreshToken.for_user(user)
+        """
+        Login Account
+        """
+        result = check_login(request)
 
-            return Response(dataFormat.content(
-                data={
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                    "uid":user.id,
-                }
-            ),status=status.HTTP_200_OK)
+        if result['type'] == 'success':
+            return Response(result,status=status.HTTP_200_OK)
         else:
+            return Response(result,status=status.HTTP_200_OK)
 
-            return Response(dataFormat.error(
-               message='account is fault' 
-            ),status=status.HTTP_200_OK)
-    
-class Logout(APIView):
-    """
-    Logout
-    """
     def get(self, request, format=None):
+        """
+        Logout Account
+        """
         logout(request)
         dataFormat=DataFormat()
-        return Response(dataFormat.content(message="logout of the account "),status=status.HTTP_200_OK)
-
-
-class Accounts_validation(APIView):
-
-    def post(self, request, format=None):
-        data = JSONParser().parse(request)
-        user=User.objects.filter(username=data["params"]['username']).first()
-        format=DataFormat()
-        if user is not None:
-
-            return Response(format.content(
-                data={
-                    "uid":user.id    #id of currnt account
-                }
-            ),status=status.HTTP_200_OK)
-        else:
-            return Response(format.error(
-                message='account is not existed!!'
-                ),status=status.HTTP_404_NOT_FOUND)
-        return Response(status=HTTP_400_BAD_REQUEST)
-
-
-class RegistrationApp(APIView):
+        return Response(dataFormat.success(message="logout of the account"),status=status.HTTP_200_OK)
     
-    def __init__(self):
-        self._errorsFlag=False
-        self._serializer={}
-        self._data={}
+class VerifyAccountView(APIView):
+    """
+    Verify account
+    """
+    def post(self, request, format=None):
+        result=verify_account(request)
+        if result['type'] == 'success':
+            return Response(result,status=status.HTTP_200_OK)
+        else:
+            return Response(result,status=status.HTTP_200_OK)
 
-    def initial_UIaccess(self):
 
-        for record in ui:
-            record.update({'Profiles_id':self._data['Profiles_id']})
-            ui_access=UI_accessSerializers(data=record)
-            if ui_access.is_valid():
-                ui_access.save()
-                self._errorsFlag=False
-            else:
-                self._errorsFlag=True
-                self._serializer=ui_access
-
-    @transaction.atomic
-    def registration_flow(self):
-        """
-        registration
-        """
-        sid = transaction.savepoint()
-        
-        try:
-            # create_authUser
-            self._serializer=AuthUserSerializer(data=self._data["authUserData"])
-            if self._serializer.is_valid():
-                self._serializer.save()
-            else:
-                raise ValueError("AuthUser have problems")
-            # create_profiles
-            self._data["profilesData"].update({"AuthUser_id":self._serializer.data['id']})   
-            
-            self._serializer = ProfilesSerializer(data=self._data["profilesData"])
-            
-            if self._serializer.is_valid():
-                self._serializer.save()
-            else:
-                raise ValueError("profiles have problems")
-            # create_answer
-
-            self._data.update({'Profiles_id':self._serializer.data['id']})
-
-            for result in self._data["answerData"]:
-
-                answerdict={
-                    "answer":result['answer'],
-                    "Profiles_id":self._data['Profiles_id'],
-                    "Questions_id":result['Questions_id']
-                }
-
-                self._serializer=Quest_answersSerializer(data=answerdict)
-                if self._serializer.is_valid():
-                    self._serializer.save()
-                else:
-                    raise ValueError("Quest_answers have problems")
-            # initial_UIaccess    
-            self.initial_UIaccess()
-
-            transaction.savepoint_commit(sid)
-        except ValueError as e:
-            self._errorsFlag=True
-            print(e)
-            transaction.savepoint_rollback(sid)
-        except Exception as e:
-            print(e)
-            self._errorsFlag=True
-            transaction.savepoint_rollback(sid)
-
+class RegistrationView(APIView):
+    
     def post(self, request, format=None):
         """
         2020/09/29 alex 註冊api
         """
         jsonData = JSONParser().parse(request)
-        
-        self._data={
-            "Profiles_id":None,
-            "profilesData":{
-                "AuthUser_id":None,
-                "name":jsonData['params']['Profiles_id']["name"]
-            },
-            "answerData":jsonData['params']['Answer_ids'],
-            "authUserData": {
-                                'username':jsonData['params']['AuthUser_id']['username'],
-                                'password':make_password(jsonData['params']['AuthUser_id']['password'])
-                            }
-        }
-        # 註冊
-        self.registration_flow()
-        
-        dataFormat=DataFormat()
 
-        if self._errorsFlag:
-            return Response(dataFormat.error(
-                message=self._serializer.errors
-            ),status=status.HTTP_400_BAD_REQUEST)
+        registerAccount=RegisterAccount(jsonData)
+        result=registerAccount.process()
+
+        if result['type'] == 'success':
+            return Response(result,status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(dataFormat.content(
-                data={
-                    "uid":self._data["profilesData"]['AuthUser_id']
-                },
-                message="the data is created successfully!!"),status=status.HTTP_201_CREATED)
+            return Response(result,status=status.HTTP_201_CREATED)
 
 
-class AccountsDetail(APIView):
-    """
-    reset password
-    """
+class RestPasswordView(APIView):
 
     def put(self, request, pk, format=None):
-        user=get_model_object(pk=pk,model=User)
-        dataFormat=DataFormat()
+        """
+        reset password
+        """
+        result=reset_password(pk=pk,model=User,request=request)
 
-        data={
-            "username":user.username,
-            "password":make_password(request.data.get('password'))
-        }
+        if result['type'] == 'success':
+            return Response(result,status=status.HTTP_200_OK)
+        else:
+            return Response(result,status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = AuthUserSerializer(user, data=data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(dataFormat.content(
-                message='The password is writed'
-            ),status=status.HTTP_200_OK)
-
-        return Response(dataFormat.error(
-            message=serializer.errors
-        ), status=status.HTTP_400_BAD_REQUEST)
-
-class Questionslist(APIView):
+class QuestionslistView(APIView):
     """
-    List all snippets, or create a new snippet.
+    List all Questions, or create a new Questions.
     """
-
     def get(self, request, format=None):
         questions = Questions.objects.all()
         serializer = QuestionsSerializer(questions, many=True)
         dataFormat=DataFormat()
-        return Response(dataFormat.content(data=serializer.data), status=status.HTTP_200_OK)
+        return Response(dataFormat.success(data=serializer.data), status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         data = JSONParser().parse(request)
@@ -311,37 +187,20 @@ class Questionslist(APIView):
                 message=serializer.error
             ),status=status.HTTP_400_BAD_REQUEST)
 
-class Quest_answer_validation(APIView):
-
+class VerifyAnswerView(APIView):
 
     def post(self, request, format=None):
-        data = JSONParser().parse(request)
-        answers=data['params']['Answer_ids']
-        profiles=filter_profiles_object(data['uid']).first()
-        dataFormat=DataFormat()
+        try:
+            result = check_answer(request)
 
-        if profiles is not None:
-            for i in range(len(answers)):
-                quest_answers=Quest_answers.objects.filter(
-                    Profiles_id=profiles.id,
-                    Questions_id=answers[i]['Questions_id'],
-                    answer=answers[i]['answer']).first()
-                if quest_answers is None:
-
-                    return Response(dataFormat.error(
-                        message="the answer is wrong!"
-                    ),status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    return Response(dataFormat.content(
-                        message="The answer is all right"
-                    ),status=status.HTTP_200_OK)   
-                 
-        else:
-
-            return Response(dataFormat.error(
-                message='Profile does not exist'
-            ),status=status.HTTP_400_BAD_REQUEST)
-
+            if result['type'] == 'success':
+                return Response(result,status=status.HTTP_200_OK)
+            else:
+                return Response(result,status=status.HTTP_200_OK)
+        except Exception as e:
+            logging.error(e)
+            dataFormat=DataFormat()
+            return Response(dataFormat.error(message="Profile does not exist!!"),status=status.HTTP_404_NOT_FOUND)        
 
 class Departmentslist(APIView):
     """

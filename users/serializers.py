@@ -7,8 +7,8 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
 
+from utils.base import DataFormat
 #######################alex 2020/09/23 app 登录##############################
-
 
 class DepartmentsSerializer(serializers.ModelSerializer):
     # test
@@ -85,3 +85,4 @@ class MyTokenRefreshSerializer(TokenRefreshSerializer):
             data['refresh'] = str(refresh)
 
         return data
+
