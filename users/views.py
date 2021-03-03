@@ -48,7 +48,7 @@ class ProcessDataTools():
         return cls.data
 
 
-class Userslist(APIView):
+class UserslistView(APIView):
     """
     List all Users, or create a new Users.
     """
@@ -56,51 +56,46 @@ class Userslist(APIView):
     def get(self, request, format=None):
         profiles = Profiles.objects.all()
         serializer = ProfilesSerializer(profiles, many=True)
-        return Response(content(types='success',data=serializer.data), status=status.HTTP_200_OK)
+        dataFormat=DataFormat()
+        return Response(dataFormat.success(data=serializer.data), status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         # data = ProcessDataTools.form_data_save(request,'create_uid')
         serializer = ProfilesSerializer(data=request.data)
+        dataFormat=DataFormat()
         if serializer.is_valid():
             serializer.save()
-            return Response(content(types='success',data=serializer.data), status=status.HTTP_201_CREATED)
-        return Response(content(
-                types='error',  # 相应的状态 'success'
+            return Response(dataFormat.success(data=serializer.data), status=status.HTTP_201_CREATED)
+        return Response(dataFormat.error(
                 message=serializer.error
             ),status=status.HTTP_400_BAD_REQUEST)
 
-class UsersDatail(APIView):
+class ProfilesDetailView(APIView):
     """
     Retrieve, update or delete a Users instance.
     """
     permission_classes = [IsAuthenticated]
-    def get_object(self, pk):
-        try:
-            return Profiles.objects.get(pk=pk)
-        except Profiles.DoesNotExist:
-            raise Http404
-    
-    def put(self, request,pk, format=None):
-        profiles = self.get_object(pk)
-        serializer = ProfilesSerializer(profiles, data=request.data)
-        format=DataFormat()
-        if serializer.is_valid():
-            serializer.save()
-            return Response(format.content(data=serializer.data), status=status.HTTP_201_CREATED)
-        return Response(format.error(
-                message=serializer.error
-            ),status=status.HTTP_400_BAD_REQUEST)
-
-class ProfilesDetail(APIView):
 
     def get(self, request, pk, format=None):
         profiles=filter_profiles_object(pk)
         serializer = ProfilesSerializer(profiles, many=True)
-        format=DataFormat()
+        dataFormat=DataFormat()
 
-        return Response(format.content(
+        return Response(dataFormat.success(
             data=serializer.data
             ),status=status.HTTP_200_OK)
+    
+    def put(self, request,pk, format=None):
+        profiles=get_model_object(pk=pk,model=Profiles)
+        serializer = ProfilesSerializer(profiles, data=request.data)
+        dataFormat=DataFormat()
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(dataFormat.success(data=serializer.data), status=status.HTTP_201_CREATED)
+        return Response(dataFormat.error(
+                message=serializer.error
+            ),status=status.HTTP_400_BAD_REQUEST)
 
 class LoginOutAccountView(APIView):
 
@@ -202,91 +197,69 @@ class VerifyAnswerView(APIView):
             dataFormat=DataFormat()
             return Response(dataFormat.error(message="Profile does not exist!!"),status=status.HTTP_404_NOT_FOUND)        
 
-class Departmentslist(APIView):
+class DepartmentslistView(APIView):
     """
     List all snippets, or create a new snippet.
     """
     permission_classes = [IsAuthenticated]
+    dataFormat=DataFormat()
 
     def get(self, request, format=None):
         departments = Departments.objects.all()
         serializer = DepartmentsSerializer(departments, many=True)
-        # content={
-        #     'type': 'success',  # 相应的状态 'success' | "error"
-        #     'data': serializer.data, # 主要的数据 [ ] | { }
-        #     'message':None     # 错误信息
-        # }
-        return Response(content(
-            types='success',  # 相应的状态 'success' | "error"
+        dataFormat=DataFormat()
+        return Response(dataFormat.success(
             data=serializer.data
         ),status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         serializer = DepartmentsSerializer(data=request.data['params'])
+        dataFormat=DataFormat()
         if serializer.is_valid():
             serializer.save()
-            # content={
-            #     'type': 'success',  # 相应的状态 'success' | "error"
-            #     'data': serializer.data, # 主要的数据 [ ] | { }
-            #     'message':None     # 错误信息
-            # }
-            return Response(content(
-                types='success',  # 相应的状态 'success' | "error"
+            return Response(dataFormat.success(
                 data=serializer.data
             ), status=status.HTTP_201_CREATED)
-        # content={
-        #     'type': 'success',  # 相应的状态 'success' | "error"
-        #     'data': None, # 主要的数据 [ ] | { }
-        #     'message':serializer.errors     # 错误信息
-        # }
-
-        return Response(content(
-            types='success',  # 相应的状态 'success' | "error"
-            message=serializer.errors
-        ), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(dataFormat.error(
+                message=serializer.errors
+            ), status=status.HTTP_400_BAD_REQUEST)
 
 
-class DepartmentsDetail(APIView):
+class DepartmentsDetailView(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
     permission_classes = [IsAuthenticated]
-
-    def get_object(self, pk):
-        try:
-            return Departments.objects.get(pk=pk)
-        except Departments.DoesNotExist:
-            raise Http404
-
+    
     def get(self, request, pk, format=None):
-        departments = self.get_object(pk)
-        serializer = DepartmentsSerializer(departments)\
-
-        return Response(content(
-            types='success',  # 相应的状态 'success' | "error"
+        departments = get_model_object(pk=pk,model=Departments)
+        serializer = DepartmentsSerializer(departments)
+        dataFormat=DataFormat()
+        return Response(dataFormat.success(
             data=serializer.data
         ),status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
-        departments = self.get_object(pk)
+        departments = get_model_object(pk=pk,model=Departments)
         serializer = DepartmentsSerializer(departments, data=request.data)
+        dataFormat=DataFormat()
         if serializer.is_valid():
             serializer.save()
 
-            return Response(content(
-                types='success',
+            return Response(dataFormat.success(
                 data=serializer.data
             ),status=status.HTTP_200_OK)
-
-        return Response(content(
-            types='error',  # 相应的状态 'success'
-            message=serializer.errors
-        ), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(dataFormat.error(
+                message=serializer.errors
+            ), status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
-        departments = self.get_object(pk)
+        departments = get_model_object(pk=pk,model=Departments)
         departments.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        dataFormat=DataFormat()
+        return Response(dataFormat.success(message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
 
 
 class MyTokenRefreshView(TokenRefreshView):
