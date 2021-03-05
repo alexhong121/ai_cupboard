@@ -9,9 +9,14 @@ DRAWER_MOD=[
 ]
 
 class Information(ModelTemplate):
+    IP=models.CharField(max_length=50,default=None)
     name=models.CharField(max_length=50,default=None)
-    value=models.CharField(max_length=50,default=None)
-
+    manufacture_date=models.DateField(default=None)
+    kind=models.CharField(max_length=50,default=None)
+    machine_NO=models.CharField(max_length=50,default=None)
+    guarantee_date=models.DateField(default=None)
+    soft_NO=models.CharField(max_length=50,default=None)
+    
     class Meta:
         ordering = ['created_date']
 

@@ -1,6 +1,6 @@
 
 
-ui=[{
+UI=[{
     'name':'個人資訊',
     'Profiles_id':'',
     'Functions_id':'1',

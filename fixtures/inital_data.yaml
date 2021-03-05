@@ -82,5 +82,5 @@
   fields:
 
     name: test_001
-    column: 3
-    row: 5
+    column: 5
+    row: 3

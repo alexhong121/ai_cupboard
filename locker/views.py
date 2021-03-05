@@ -1,8 +1,9 @@
 from django.db import transaction
 from django.shortcuts import render
+from django.http import Http404
 from locker.models import Cabinet,Lockers
 from locker.serializers import CabinetSerializer,LockersSerializer
-from django.http import Http404
+from locker.core import LockerTools
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
@@ -10,35 +11,21 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 
-from utils.base import content
+from utils.base import content,DataFormat
 
 # Create your views here.
 
-lockerData={
-    "location":"",
-    "code":"",
-    "name":"",
-    "mode":"",
-    "lock_time":0,
-    "Cabinet":"",
-    "status":False
-}
 
-class LockerTools():
 
-    def initial(self,**kwargs):
-        cabinet=Cabinet(name=kwargs['name'],row=kwargs['row'],column=kwargs['column'])
-        cabinet.save()
-        if cabinet is not None:
-            for i in range(int(kwargs['row'])):
-                for j in range(int(kwargs['column'])):
-                    self._initial_locker(row=i+1,column=j+1,Cabinet_id=cabinet.id)
+
+class InitializeLockView(APIView):
+
+    def get(self,request, format=None):
+        lokerTools=LockerTools()
         
-
-    def _initial_locker(self,**kwargs):
-        location='{},{}'.format(kwargs['row'],kwargs['column'])
-        lockers=Lockers(location=location,Cabinet_id=Cabinet.objects.get(pk=kwargs['Cabinet_id']))
-        lockers.save()
+        result = lokerTools.initial()    
+        return Response(result,status=status.HTTP_201_CREATED
+        )
 
 
 class Cabinetlist(APIView):

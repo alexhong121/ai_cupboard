@@ -26,7 +26,7 @@ class UI_access(ModelTemplate):
         ordering = ['created_date']
 
 class Locker_access(ModelTemplate):
-    Profiles_ids=models.ForeignKey(Profiles,on_delete=models.CASCADE)
+    Profiles_id=models.ForeignKey(Profiles,on_delete=models.CASCADE,null=True)
     active=models.BooleanField(default=True)
     Lockers_ids=models.ManyToManyField(Lockers,blank=True)
 

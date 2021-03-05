@@ -1,16 +1,13 @@
 import logging
 
-from django.db import transaction
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login ,logout
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth import logout
 from django.db.utils import IntegrityError
 
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,14 +15,13 @@ from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
 from rest_framework import status
 
-
 from users.models import Profiles,Departments,Questions,Quest_answers
-from users.serializers import ProfilesSerializer,AuthUserSerializer,Quest_answersSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer
+from users.serializers import ProfilesSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer
 
 from users.core import check_login,verify_account,RegisterAccount,reset_password,check_answer
-from utils.base import filter_profiles_object,content,DataFormat,get_model_object
-from access.data import ui
-from access.serializers import UI_accessSerializers
+from utils.base import filter_profiles_object,DataFormat,get_model_object
+
+
 
 # Create your views here.
 class ProcessDataTools():
@@ -177,7 +173,7 @@ class QuestionslistView(APIView):
         serializer = QuestionsSerializer(data=processData)
         if serializer.is_valid():
             serializer.save()
-            return Response(dataFormat.content(data=serializer.data), status=status.HTTP_201_CREATED)
+            return Response(dataFormat.success(data=serializer.data), status=status.HTTP_201_CREATED)
         return Response(dataFormat.error(
                 message=serializer.error
             ),status=status.HTTP_400_BAD_REQUEST)

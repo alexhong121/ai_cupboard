@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dbbackup',
     #third-party app
     'rest_framework',               #alex 2020/09/23 installed apps
     'rest_framework.authtoken',
@@ -185,3 +186,6 @@ APPEND_SLASH=False
 FIXTURE_DIRS = (
    '/home/alex/Django/AlCupboard/aicupboard/fixtures',
 )
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/my/backup/dir/'}

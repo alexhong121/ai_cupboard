@@ -8,6 +8,8 @@ from django.contrib.auth.hashers import make_password
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from access.data import UI
+from access.serializers import UI_accessSerializers
 from users.serializers import ProfilesSerializer,AuthUserSerializer,Quest_answersSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer
 from users.models import Profiles,Departments,Questions,Quest_answers
 from utils.base import DataFormat,get_model_object,filter_profiles_object
@@ -121,48 +123,46 @@ class RegisterAccount():
                             }
         }
     
-    def initial_UIaccess(self):
+    def __initial_UIaccess(self):
         "晚一點再寫"
 
-        for record in ui:
-            record.update({'Profiles_id':self._data['Profiles_id']})
-            ui_access=UI_accessSerializers(data=record)
-            if ui_access.is_valid():
-                ui_access.save()
-                self._errorsFlag=False
+        for record in UI:
+            record.update({'Profiles_id':self.__data['Profiles_id']})
+            self.__serializer=UI_accessSerializers(data=record)
+            if self.__serializer.is_valid():
+                self.__serializer.save()
             else:
-                self._errorsFlag=True
-                self._serializer=ui_access
+                raise ValueError(self.__serializer.errors)
 
     def __add_authUser(self):
         self.__serializer=AuthUserSerializer(data=self.__data["authUserData"])
         if self.__serializer.is_valid():
             self.__serializer.save()
-            self._data["profilesData"].update({"AuthUser_id":self.__serializer.data['id']})  
+            self.__data["profilesData"].update({"AuthUser_id":self.__serializer.data['id']})  
         else:
             raise ValueError(self.__serializer.errors)
     
     def __add_profiles(self):
-        self._serializer = ProfilesSerializer(data=self.__data["profilesData"])        
-        if self._serializer.is_valid():
-            self._serializer.save()
-            self._data.update({'Profiles_id':self.__serializer.data['id']})
+        self.__serializer = ProfilesSerializer(data=self.__data["profilesData"])        
+        if self.__serializer.is_valid():
+            self.__serializer.save()
+            self.__data.update({'Profiles_id':self.__serializer.data['id']})
         else:
             raise ValueError(self.__serializer.errors)
 
     def __add_answer(self):
-        for result in self._data["answerData"]:
+        for result in self.__data["answerData"]:
 
             answerdict={
                 "answer":result['answer'],
-                "Profiles_id":self._data['Profiles_id'],
+                "Profiles_id":self.__data['Profiles_id'],
                 "Questions_id":result['Questions_id']
             }
 
-            self._serializer=Quest_answersSerializer(data=answerdict)
+            self.__serializer=Quest_answersSerializer(data=answerdict)
 
-            if self._serializer.is_valid():
-                self._serializer.save()
+            if self.__serializer.is_valid():
+                self.__serializer.save()
             else:
                 raise ValueError(self.__serializer.errors)
 
@@ -181,7 +181,10 @@ class RegisterAccount():
             self.__add_profiles()
             # create_answer
             self.__add_answer()
-            # initial_UIaccess    
+            # initial_UIaccess
+            self.__initial_UIaccess()
+
+
             transaction.savepoint_commit(sid)
             return dataFormat.success(data={
                     "uid":self.__data["profilesData"]['AuthUser_id']
