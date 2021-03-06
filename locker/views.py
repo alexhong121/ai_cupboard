@@ -33,27 +33,6 @@ class Cabinetlist(APIView):
     List all snippets, or create a new snippet.
     """
     permission_classes = [IsAuthenticated]
-    def __init__(self):
-        self._data=None
-        self._errorsFlag=False
-        self._serializerErrors=None
-
-
-    def newLockers(self):
-        cabinet=Cabinet.objects.get(pk=self._data)
-        for column in range(cabinet.column):
-            for row in range(cabinet.row):
-                lockerData.update({
-                    "location":"{0},{1}".format(column,row),
-                    "Cabinet_id":self._data,
-                })
-                serializer= LockersSerializer(data=lockerData)
-                if serializer.is_valid():
-                    serializer.save()
-                    self._errorsFlag=False
-                else:
-                    self._errorsFlag=True
-                    self._serializerErrors=serializer.errors
 
     def get(self, request, format=None):
         cabinet = Cabinet.objects.all()
@@ -66,10 +45,8 @@ class Cabinetlist(APIView):
         serializer = CabinetSerializer(data=data['params'])
         if serializer.is_valid():
             serializer.save()
-            self._data=serializer.data['id']
-            transaction.on_commit(self.newLockers)
             if self._errorsFlag:
-                return Response(content(types='error',message=self._serializerErrors), status=status.HTTP_400_BAD_REQUEST)
+                return Response(content(types='error'), status=status.HTTP_400_BAD_REQUEST)
             return Response(content(types="success",message="the locker is created!"), status=status.HTTP_201_CREATED)
     
         return Response(content(types='error',message=serializer.errors),status=status.HTTP_400_BAD_REQUEST)
@@ -107,7 +84,7 @@ class CabinetDetail(APIView):
         return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
 
 
-class Lockerslist(APIView):
+class LockerslistView(APIView):
     """
     List all snippets, or create a new snippet.
     """
@@ -115,8 +92,6 @@ class Lockerslist(APIView):
     def get(self, request, format=None):
         lockers = Lockers.objects.all()
         serializer = LockersSerializer(lockers, many=True)
-
-
 
         return Response(content(types='success',data=serializer.data),status=status.HTTP_200_OK)
 
