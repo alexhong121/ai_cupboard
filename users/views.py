@@ -56,7 +56,6 @@ class UserslistView(APIView):
         return Response(dataFormat.success(data=serializer.data), status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
-        # data = ProcessDataTools.form_data_save(request,'create_uid')
         serializer = ProfilesSerializer(data=request.data)
         dataFormat=DataFormat()
         if serializer.is_valid():
@@ -65,6 +64,21 @@ class UserslistView(APIView):
         return Response(dataFormat.error(
                 message=serializer.error
             ),status=status.HTTP_400_BAD_REQUEST)
+
+class ProfilesAuthUserView(APIView):
+    """
+    Retrieve, update or delete a Users instance.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk, format=None):
+        profiles=filter_profiles_object(pk)
+        serializer = ProfilesSerializer(profiles, many=True)
+        dataFormat=DataFormat()
+
+        return Response(dataFormat.success(
+            data=serializer.data
+            ),status=status.HTTP_200_OK)
 
 class ProfilesDetailView(APIView):
     """
@@ -82,7 +96,8 @@ class ProfilesDetailView(APIView):
             ),status=status.HTTP_200_OK)
     
     def put(self, request,pk, format=None):
-        profiles=get_model_object(pk=pk,model=Profiles)
+        profiles=filter_profiles_object(pk).first()
+        print(profiles.name)
         serializer = ProfilesSerializer(profiles, data=request.data)
         dataFormat=DataFormat()
 
@@ -90,7 +105,7 @@ class ProfilesDetailView(APIView):
             serializer.save()
             return Response(dataFormat.success(data=serializer.data), status=status.HTTP_201_CREATED)
         return Response(dataFormat.error(
-                message=serializer.error
+                message=serializer.errors
             ),status=status.HTTP_400_BAD_REQUEST)
 
 class LoginOutAccountView(APIView):
@@ -138,9 +153,9 @@ class RegistrationView(APIView):
         result=registerAccount.process()
 
         if result['type'] == 'success':
-            return Response(result,status=status.HTTP_400_BAD_REQUEST)
-        else:
             return Response(result,status=status.HTTP_201_CREATED)
+        else:
+            return Response(result,status=status.HTTP_400_BAD_REQUEST)
 
 
 class RestPasswordView(APIView):
@@ -181,6 +196,8 @@ class QuestionslistView(APIView):
 class VerifyAnswerView(APIView):
 
     def post(self, request, format=None):
+        print(request)
+
         try:
             result = check_answer(request)
 
@@ -192,6 +209,7 @@ class VerifyAnswerView(APIView):
             logging.error(e)
             dataFormat=DataFormat()
             return Response(dataFormat.error(message="Profile does not exist!!"),status=status.HTTP_404_NOT_FOUND)        
+
 
 class DepartmentslistView(APIView):
     """

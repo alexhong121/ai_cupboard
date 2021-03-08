@@ -29,7 +29,7 @@ class AuthUserSeriForProfiles(serializers.ModelSerializer):
     # test						
     class Meta:						
         model = User						
-        fields = ['username']						
+        fields = ['username','is_superuser']						
 
 
 class ProfilesSerializer(serializers.ModelSerializer):
@@ -43,7 +43,22 @@ class ProfilesSerializer(serializers.ModelSerializer):
        ret = super().to_representation(instance)
        ret['AuthUser_id'] = AuthUserSeriForProfiles(instance.AuthUser_id).data
        return ret
-   
+
+    def update(self, instance, validated_data):
+        """
+        Update and return an existing `Snippet` instance, given the validated data.
+        """
+
+        instance.image_url = validated_data.get('image_url', instance.image_url)
+        instance.name = validated_data.get('name', instance.name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phone = validated_data.get('phone', instance.phone)
+        instance.remark = validated_data.get('remark', instance.remark)
+        instance.alias=validated_data.get('remark', instance.alias)
+        instance.Departments_id = validated_data.get('Departments_id', instance.Departments_id)
+        instance.AuthUser_id = validated_data.get('AuthUser_id', instance.AuthUser_id)
+        instance.save()
+        return instance
 
 class QuestionsSerializer(serializers.ModelSerializer):
     # test

@@ -17,7 +17,6 @@ class Unitlist(APIView):
     def get(self, request, format=None):
         unit = Unit.objects.all()
         serializer = UnitSerializer(unit, many=True)
-        content
         return Response(content(types='success',data=serializer.data),status=status.HTTP_200_OK)
 
     def post(self, request, format=None):

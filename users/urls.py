@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 #######################alex 2020/09/23 app 登录##############################
 urlpatterns = [
     path('', views.UserslistView.as_view()),    #users list
-    path('<int:pk>',views.ProfilesDetailView.as_view()),
+    # path('<int:pk>',views.ProfilesDetailView.as_view()),
     path('login', views.LoginOutAccountView.as_view()),     #login
     path('logout',views.LoginOutAccountView.as_view()),
     path('registration', views.RegistrationView.as_view()),  #註冊
