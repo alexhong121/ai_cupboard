@@ -9,7 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 
-from utils.base import content
+from utils.base import content,DataFormat
+from systems.core import backup_db,listdir_db
 
 # Create your views here.
 
@@ -112,3 +113,15 @@ class InformationDetail(APIView):
         information = self.get_object(pk)
         information.delete()
         return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+
+class BackupdbView(APIView):
+    def get(self, request,format=None):
+        result=backup_db()
+        dataformat=DataFormat()
+        return Response(dataformat.success(message=result),status=status.HTTP_200_OK)
+
+class ListdirdbView(APIView):
+    def get(self, request,format=None):
+        result=listdir_db()
+        dataformat=DataFormat()
+        return Response(dataformat.success(data=result),status=status.HTTP_200_OK)

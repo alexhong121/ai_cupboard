@@ -19,7 +19,7 @@ urlpatterns = [
     path('departments', views.DepartmentslistView.as_view()),# 部門list
     path('departments/<int:pk>',views.DepartmentsDetailView.as_view()),
     path('uid=<int:pk>', views.ProfilesDetailView.as_view()),  #profiles detail
-
+    path('image/uid=<int:pk>', views.upload_to_image.as_view()),  #upload to image
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),     
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/refresh/', views.MyTokenRefreshView.as_view()),

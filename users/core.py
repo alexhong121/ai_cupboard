@@ -78,7 +78,9 @@ def check_answer(request):
         quest_answers=Quest_answers.objects.filter(
             Profiles_id=profiles.id,
             Questions_id=request.data.get('Questions_id'),
-            answer=request.data.get('answer'))
+            answer=request.data.get('answer')).first()
+        print(quest_answers)
+
         if quest_answers is None: 
             return dataFormat.error(message="the answer is wrong!")
         else:

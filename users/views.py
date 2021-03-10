@@ -97,7 +97,6 @@ class ProfilesDetailView(APIView):
     
     def put(self, request,pk, format=None):
         profiles=filter_profiles_object(pk).first()
-        print(profiles.name)
         serializer = ProfilesSerializer(profiles, data=request.data)
         dataFormat=DataFormat()
 
@@ -107,6 +106,20 @@ class ProfilesDetailView(APIView):
         return Response(dataFormat.error(
                 message=serializer.errors
             ),status=status.HTTP_400_BAD_REQUEST)
+
+class upload_to_image(APIView):
+    def post(self, request, pk , format=None):
+        profiles=filter_profiles_object(pk).first()
+        serializer = ProfilesSerializer(profiles, data=request.data)
+        dataFormat=DataFormat()
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(dataFormat.success(data=serializer.data), status=status.HTTP_201_CREATED)
+        return Response(dataFormat.error(
+                message=serializer.errors
+            ),status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginOutAccountView(APIView):
 
