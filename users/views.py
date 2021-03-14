@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from users.models import Profiles,Departments,Questions,Quest_answers
-from users.serializers import ProfilesSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer
+from users.serializers import ProfilesSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer,AuthUserSeriForProfiles
 
 from users.core import check_login,verify_account,RegisterAccount,reset_password,check_answer
 from utils.base import filter_profiles_object,DataFormat,get_model_object
@@ -42,6 +42,18 @@ class ProcessDataTools():
         cls.data.setdefault(row,data['uid'])
 
         return cls.data
+
+class AuthUserlistView(APIView):
+    """
+        list of account
+    """
+    def get(self, request, format=None):
+        authUser=User.objects.all()
+        serializer= AuthUserSeriForProfiles(authUser,many=True)
+        dataFormat=DataFormat()
+
+        return Response(dataFormat.success(data=serializer.data), status=status.HTTP_200_OK)
+
 
 
 class UserslistView(APIView):
@@ -108,6 +120,7 @@ class ProfilesDetailView(APIView):
             ),status=status.HTTP_400_BAD_REQUEST)
 
 class upload_to_image(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, pk , format=None):
         profiles=filter_profiles_object(pk).first()
         serializer = ProfilesSerializer(profiles, data=request.data)

@@ -2,9 +2,10 @@ import logging
 
 from django.db import transaction
 from django.http import Http404
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User,UserManager
 from django.contrib.auth import authenticate,login ,logout
 from django.contrib.auth.hashers import make_password
+# from django.contrib.auth.models.UserManager import create_superuser
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -125,6 +126,11 @@ class RegisterAccount():
                             }
         }
     
+        # extra_fields.setdefault('is_staff', True)
+        # extra_fields.setdefault('is_superuser', True)
+
+
+
     def __initial_UIaccess(self):
         "晚一點再寫"
 
@@ -137,6 +143,9 @@ class RegisterAccount():
                 raise ValueError(self.__serializer.errors)
 
     def __add_authUser(self):
+        if self.__data["authUserData"]['username']=='admin' or self.__data["authUserData"]['username']=='work':
+            self.__data["authUserData"].setdefault('is_staff', True)
+            self.__data["authUserData"].setdefault('is_superuser', True)
         self.__serializer=AuthUserSerializer(data=self.__data["authUserData"])
         if self.__serializer.is_valid():
             self.__serializer.save()

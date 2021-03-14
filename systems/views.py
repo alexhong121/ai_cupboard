@@ -125,3 +125,8 @@ class ListdirdbView(APIView):
         result=listdir_db()
         dataformat=DataFormat()
         return Response(dataformat.success(data=result),status=status.HTTP_200_OK)
+
+class CheckConnectionView(APIView):
+    def get(self, request,format=None):
+        dataformat=DataFormat()
+        return Response(dataformat.success(message="Successfully connected"),status=status.HTTP_200_OK)

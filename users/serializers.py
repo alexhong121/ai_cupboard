@@ -29,7 +29,7 @@ class AuthUserSeriForProfiles(serializers.ModelSerializer):
     # test						
     class Meta:						
         model = User						
-        fields = ['username','is_superuser']						
+        fields = '__all__'						
 
 
 class ProfilesSerializer(serializers.ModelSerializer):

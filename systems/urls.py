@@ -8,4 +8,5 @@ urlpatterns = [
     path('information/<int:pk>', views.InformationDetail.as_view()),      #information Detail
     path('backup', views.BackupdbView.as_view()),
     path('listdb', views.ListdirdbView.as_view()), # backup db
+    path('connection', views.CheckConnectionView.as_view()), # backup db
 ]

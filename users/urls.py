@@ -13,7 +13,8 @@ urlpatterns = [
     path('logout',views.LoginOutAccountView.as_view()),
     path('registration', views.RegistrationView.as_view()),  #註冊
     path('psforget',views.VerifyAccountView.as_view()),   #forget password V
-    path('questions',views.QuestionslistView.as_view()), # questions    
+    path('questions',views.QuestionslistView.as_view()), # questions
+    path('authUser',views.AuthUserlistView.as_view()),   # list of account   
     path('authUser/uid=<int:pk>',views.RestPasswordView.as_view()),   #修改密碼 
     path('questions/validation',views.VerifyAnswerView.as_view()), #validation problems
     path('departments', views.DepartmentslistView.as_view()),# 部門list
