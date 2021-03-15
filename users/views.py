@@ -18,7 +18,7 @@ from rest_framework import status
 from users.models import Profiles,Departments,Questions,Quest_answers
 from users.serializers import ProfilesSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer,AuthUserSeriForProfiles
 
-from users.core import check_login,verify_account,RegisterAccount,reset_password,check_answer
+from users.core import check_login,verify_account,RegisterAccount,reset_password,check_answer,ResetAuthUser
 from utils.base import filter_profiles_object,DataFormat,get_model_object
 
 
@@ -190,12 +190,20 @@ class RestPasswordView(APIView):
         """
         reset password
         """
-        result=reset_password(pk=pk,model=User,request=request)
+        resetAuthUser=ResetAuthUser()
+        dataFormat=DataFormat()
+        questions_answer=resetAuthUser.questions_answer(pk=pk,model=Quest_answers,request=request)
+        
+        password=resetAuthUser.password(pk=pk,model=User,request=request)
 
-        if result['type'] == 'success':
-            return Response(result,status=status.HTTP_200_OK)
-        else:
-            return Response(result,status=status.HTTP_400_BAD_REQUEST)
+
+        if password['type'] == 'success' and questions_answer['type'] == 'success':
+            return Response(dataFormat.success(message="Successfully completed!!"),status=status.HTTP_200_OK)
+
+        elif password['type'] == 'error':
+            return Response(password,status=status.HTTP_400_BAD_REQUEST)
+        elif questions_answer['type'] == 'error':
+            return questions_answer(password,status=status.HTTP_400_BAD_REQUEST)
 
 class QuestionslistView(APIView):
     """

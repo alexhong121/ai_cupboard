@@ -7,6 +7,8 @@ def filter_profiles_object(pk):
     except Profiles.DoesNotExist:
         raise Http404("Profiles does not exist")
 
+
+
 def content(types=None,data=None,message=None):
     CONTENT_STRUCTURE={
         'type': types,  # 相应的状态 'success' | "error"

@@ -2,10 +2,9 @@ import logging
 
 from django.db import transaction
 from django.http import Http404
-from django.contrib.auth.models import User,UserManager
+from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login ,logout
 from django.contrib.auth.hashers import make_password
-# from django.contrib.auth.models.UserManager import create_superuser
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -16,6 +15,70 @@ from users.models import Profiles,Departments,Questions,Quest_answers
 from utils.base import DataFormat,get_model_object,filter_profiles_object
 
 dataFormat=DataFormat()
+
+class ResetAuthUser():
+
+    def filter_answer_object(self,Profiles_id,Questions_id):
+        try:
+            return Quest_answers.objects.filter(Profiles_id=Profiles_id,Questions_id=Questions_id).first()
+        except Quest_answers.DoesNotExist:
+            raise Http404("Quest_answers does not exist")
+
+    def filter_profiles_object(self,pk):
+        try:
+            return Profiles.objects.filter(AuthUser_id=pk).first()
+        except Profiles.DoesNotExist:
+            raise Http404("Profiles does not exist")
+
+    def password(self,pk,model,request):
+        """
+        input: pk,model,request
+        output: 
+        """
+        user=get_model_object(pk=pk,model=model)
+
+        data={
+            "username":user.username,
+            "password":make_password(request.data.get('password'))
+        }
+
+        serializer = AuthUserSerializer(user, data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return dataFormat.success(
+                message='The password is writed'
+            )
+        else:
+
+            return dataFormat.error(
+                message=serializer.errors
+            )
+
+    def questions_answer(self,pk,model,request):
+        profiles=self.filter_profiles_object(pk)
+        answer=self.filter_answer_object(Profiles_id=profiles.id,Questions_id=request.data.get('Questions_id'))
+        data={
+            "Questions_id":request.data.get('Questions_id'),
+            "answer":request.data.get('answer'),
+            "Profiles_id":profiles.id
+        }
+        serializer=Quest_answersSerializer(answer,data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            print(serializer.data)
+            return dataFormat.success(
+                message='The Quest_answers is writed'
+            )
+        else:
+
+            return dataFormat.error(
+                message=serializer.errors
+            )
+
+
 
 def reset_password(pk,model,request):
     """
@@ -42,6 +105,8 @@ def reset_password(pk,model,request):
         return dataFormat.error(
             message=serializer.errors
         )
+
+
 
 
 def check_login(request):
