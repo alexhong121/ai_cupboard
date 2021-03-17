@@ -81,7 +81,7 @@ class CabinetDetail(APIView):
     def delete(self, request, pk, format=None):
         cabinet = self.get_object(pk)
         cabinet.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)
 
 
 class LockerslistView(APIView):
@@ -132,4 +132,4 @@ class LockersDetail(APIView):
     def delete(self, request, pk, format=None):
         lockers = self.get_object(pk)
         lockers.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)

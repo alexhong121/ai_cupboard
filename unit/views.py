@@ -58,7 +58,7 @@ class UnitDetail(APIView):
     def delete(self, request, pk, format=None):
         unit = self.get_object(pk)
         unit.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)
 
 class Categorylist(APIView):
     """
@@ -106,4 +106,4 @@ class CategoryDetail(APIView):
     def delete(self, request, pk, format=None):
         category = self.get_object(pk)
         category.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)

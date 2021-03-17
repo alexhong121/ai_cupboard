@@ -18,7 +18,7 @@ from rest_framework import status
 from users.models import Profiles,Departments,Questions,Quest_answers
 from users.serializers import ProfilesSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer,AuthUserSeriForProfiles
 
-from users.core import check_login,verify_account,RegisterAccount,reset_password,check_answer,ResetAuthUser
+from users.core import check_login,verify_account,RegisterAccount,check_answer,ResetAuthUser
 from utils.base import filter_profiles_object,DataFormat,get_model_object
 
 
@@ -307,7 +307,7 @@ class DepartmentsDetailView(APIView):
         departments = get_model_object(pk=pk,model=Departments)
         departments.delete()
         dataFormat=DataFormat()
-        return Response(dataFormat.success(message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(dataFormat.success(message="the data has deleted"),status=status.HTTP_200_OK)
 
 
 class MyTokenRefreshView(TokenRefreshView):

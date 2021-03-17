@@ -62,7 +62,7 @@ class ConfigDetail(APIView):
     def delete(self, request, pk, format=None):
         configuration = self.get_object(pk)
         configuration.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)
 
 class Informationlist(APIView):
     """
@@ -112,7 +112,7 @@ class InformationDetail(APIView):
     def delete(self, request, pk, format=None):
         information = self.get_object(pk)
         information.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)
 
 class BackupdbView(APIView):
     def get(self, request,format=None):

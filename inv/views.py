@@ -85,7 +85,7 @@ class ProductDetail(APIView):
     def delete(self, request, pk, format=None):
         product = self.get_object(pk)
         product.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)
 
 class Stocklist(APIView):
     """
@@ -133,7 +133,7 @@ class StockDetail(APIView):
     def delete(self, request, pk, format=None):
         stock = self.get_object(pk)
         stock.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)
 
 class Out_of_the_warehouse(APIView):
 

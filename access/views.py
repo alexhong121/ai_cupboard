@@ -142,7 +142,7 @@ class UI_accDetail(APIView):
     def delete(self, request, pk, format=None):
         ui_access = self.get_object(pk)
         ui_access.delete()
-        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_204_NO_CONTENT)
+        return Response(content(types='success',message="the data has deleted"),status=status.HTTP_200_OK)
 
 
 class GetAccessList(APIView):

@@ -17,7 +17,9 @@ from utils.base import DataFormat,get_model_object,filter_profiles_object
 dataFormat=DataFormat()
 
 class ResetAuthUser():
-
+    """
+        修改密碼API
+    """
     def filter_answer_object(self,Profiles_id,Questions_id):
         try:
             return Quest_answers.objects.filter(Profiles_id=Profiles_id,Questions_id=Questions_id).first()
@@ -30,12 +32,21 @@ class ResetAuthUser():
         except Profiles.DoesNotExist:
             raise Http404("Profiles does not exist")
 
+    def get_model_object(self,pk,model):
+
+        try:
+            return model.objects.get(pk=pk)
+        except model.DoesNotExist:
+            raise Http404("%s does not exist" % model)
+            
+
     def password(self,pk,model,request):
         """
         input: pk,model,request
         output: 
         """
-        user=get_model_object(pk=pk,model=model)
+
+        user=self.get_model_object(pk=pk,model=model)
 
         data={
             "username":user.username,
@@ -77,37 +88,6 @@ class ResetAuthUser():
             return dataFormat.error(
                 message=serializer.errors
             )
-
-
-
-def reset_password(pk,model,request):
-    """
-    input: pk,model,request
-    output: 
-    """
-    user=get_model_object(pk=pk,model=model)
-
-    data={
-        "username":user.username,
-        "password":make_password(request.data.get('password'))
-    }
-
-    serializer = AuthUserSerializer(user, data=data)
-
-    if serializer.is_valid():
-        serializer.save()
-
-        return dataFormat.success(
-            message='The password is writed'
-        )
-    else:
-
-        return dataFormat.error(
-            message=serializer.errors
-        )
-
-
-
 
 def check_login(request):
     """
