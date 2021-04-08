@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser
 
 from users.views import ProcessDataTools
-
+from utils.base import content
 stockRecord={
     "initial_value":"0",
     "out_value":"0",

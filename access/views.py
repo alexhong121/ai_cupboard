@@ -105,7 +105,7 @@ class UI_acclist(APIView):
     def get(self, request, format=None):
         ui_access=UI_access.objects.all()
         serializers=UI_accessSerializers(ui_access,many=True)
-        return Response(content(types='success',data=serializer.data), status=status.HTTP_200_OK)
+        return Response(content(types='success',data=serializers.data), status=status.HTTP_200_OK)
 
     def post(self, request,format=None):
         data=JSONParser().parse(request)

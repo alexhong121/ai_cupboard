@@ -18,7 +18,7 @@ from rest_framework import status
 from users.models import Profiles,Departments,Questions,Quest_answers
 from users.serializers import ProfilesSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer,AuthUserSeriForProfiles
 
-from users.core import check_login,verify_account,RegisterAccount,check_answer,ResetAuthUser
+from users.core import check_login,verify_account,RegisterAccount,check_answer,ResetAuthUser,AuthUserCore
 from utils.base import filter_profiles_object,DataFormat,get_model_object
 
 
@@ -46,15 +46,50 @@ class ProcessDataTools():
 class AuthUserlistView(APIView):
     """
         list of account
-    """
-    def get(self, request, format=None):
-        authUser=User.objects.all()
+    """  
+    permission_classes = [IsAuthenticated]
+        
+    def get(self, request, format=None):    
+        authUser= User.objects.all()    
         serializer= AuthUserSeriForProfiles(authUser,many=True)
         dataFormat=DataFormat()
-
         return Response(dataFormat.success(data=serializer.data), status=status.HTTP_200_OK)
+        
+class AuthUserDetailView(APIView):
+    """
+        Detail of account
+    """  
+    permission_classes = [IsAuthenticated]
+        
+    def get(self, request, format=None):    
+        authUser= User.objects.all()    
+        serializer= AuthUserSeriForProfiles(authUser,many=True)
+        dataFormat=DataFormat()
+   
+        return Response(dataFormat.success(data=serializer.data), status=status.HTTP_200_OK)
+    
+    def put(self,request,pk,format=None):
+        authUser = get_model_object(pk=pk,model=User)
+        # data={
+        #     'is_active':request.data.get('is_active',True)
+        #     'password':
+        # }
 
 
+        if request.data.get('is_active'):
+            print("aa")
+            # serializer=AuthUserSeriForProfiles(authUser,data=)
+        
+
+
+    def delete(self, request, pk, format=None): 
+        authUser = get_model_object(pk=pk,model=User)
+        dataFormat=DataFormat()
+        if authUser.profiles:
+            return Response(dataFormat.error(message="profiles exist"),status=status.HTTP_200_OK)
+        else:   
+            authUser.delete()
+        return Response(dataFormat.success(message="the data has deleted"),status=status.HTTP_200_OK)
 
 class UserslistView(APIView):
     """
@@ -133,7 +168,6 @@ class upload_to_image(APIView):
                 message=serializer.errors
             ),status=status.HTTP_400_BAD_REQUEST)
 
-
 class LoginOutAccountView(APIView):
 
     def post(self, request, format=None):
@@ -166,7 +200,6 @@ class VerifyAccountView(APIView):
         else:
             return Response(result,status=status.HTTP_200_OK)
 
-
 class RegistrationView(APIView):
     
     def post(self, request, format=None):
@@ -183,8 +216,7 @@ class RegistrationView(APIView):
         else:
             return Response(result,status=status.HTTP_400_BAD_REQUEST)
 
-
-class RestPasswordView(APIView):
+class ResetPasswordView(APIView):
 
     def put(self, request, pk, format=None):
         """
@@ -244,7 +276,6 @@ class VerifyAnswerView(APIView):
             dataFormat=DataFormat()
             return Response(dataFormat.error(message="Profile does not exist!!"),status=status.HTTP_404_NOT_FOUND)        
 
-
 class DepartmentslistView(APIView):
     """
     List all snippets, or create a new snippet.
@@ -272,7 +303,6 @@ class DepartmentslistView(APIView):
             return Response(dataFormat.error(
                 message=serializer.errors
             ), status=status.HTTP_400_BAD_REQUEST)
-
 
 class DepartmentsDetailView(APIView):
     """
@@ -305,10 +335,10 @@ class DepartmentsDetailView(APIView):
 
     def delete(self, request, pk, format=None):
         departments = get_model_object(pk=pk,model=Departments)
+        
         departments.delete()
         dataFormat=DataFormat()
         return Response(dataFormat.success(message="the data has deleted"),status=status.HTTP_200_OK)
-
 
 class MyTokenRefreshView(TokenRefreshView):
     serializer_class = MyTokenRefreshSerializer
