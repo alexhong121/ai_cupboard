@@ -53,7 +53,7 @@ class AuthUserCore(BaseCore):
         authUser=self.get_model_object(pk=pk,model=User)
 
         data={
-            "username":user.username,
+            "username":authUser.username,
             "password":make_password(request.data.get('password'))
         }
 
@@ -94,7 +94,7 @@ class AuthUserCore(BaseCore):
             return dataFormat.error(
                 message=serializer.errors
             )
-    def check_login(request):
+    def check_login(self,request):
         """
             檢查登入帳號 並登入
         """
@@ -104,20 +104,25 @@ class AuthUserCore(BaseCore):
             user=User.objects.filter(username=result).first()
             refresh = RefreshToken.for_user(user)
 
-            return dataFormat.success(
-                data={
+            return {
+                'type': 'success', 
+                'data':{
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                     "uid":user.id,
                 }
-            )
+            }
+
         else:
 
-            return dataFormat.error(
-                message='account is fault' 
-            )
+            return {
+                'type': 'error',
+                'message':'account is fault' 
+            }
+                
+            
 
-    def check_answer(request):
+    def check_answer(self,request):
         profiles=filter_profiles_object(request.data.get('uid')).first()
 
         if profiles is not None:
@@ -125,163 +130,30 @@ class AuthUserCore(BaseCore):
                 Profiles_id=profiles.id,
                 Questions_id=request.data.get('Questions_id'),
                 answer=request.data.get('answer')).first()
-            print(quest_answers)
 
             if quest_answers is None: 
-                return dataFormat.error(message="the answer is wrong!")
+                return {'message':"the answer is wrong!"}
             else:
-                return dataFormat.success(message="The answer is correct!")      
+                return {
+                    'type': 'success',
+                    'message':"The answer is correct!"}      
         else:
             raise Http404('Profile does not exist')
 
-    def verify_account(request):
+    def verify_account(self, request):
         user=User.objects.filter(username=request.data.get('username')).first()
         if user is not None:
-            return dataFormat.success(
-                data={
+            return {
+                'type':'success',
+                'data':{
                     "uid":user.id    #id of currnt account
                 }
-            )
+            }
+
         else:
-            return dataFormat.error(
-                    message='account is not existed!!'
-                )
-
-
-class ResetAuthUser():
-    """
-        修改密碼API
-    """
-    def filter_answer_object(self,Profiles_id,Questions_id):
-        try:
-            return Quest_answers.objects.filter(Profiles_id=Profiles_id,Questions_id=Questions_id).first()
-        except Quest_answers.DoesNotExist:
-            raise Http404("Quest_answers does not exist")
-
-    def filter_profiles_object(self,pk):
-        try:
-            return Profiles.objects.filter(AuthUser_id=pk).first()
-        except Profiles.DoesNotExist:
-            raise Http404("Profiles does not exist")
-
-    def get_model_object(self,pk,model):
-
-        try:
-            return model.objects.get(pk=pk)
-        except model.DoesNotExist:
-            raise Http404("%s does not exist" % model)
-            
-
-    def password(self,pk,model,request):
-        """
-        input: pk,model,request
-        output: 
-        """
-
-        user=self.get_model_object(pk=pk,model=model)
-
-        data={
-            "username":user.username,
-            "password":make_password(request.data.get('password'))
-        }
-
-        serializer = AuthUserSerializer(user, data=data)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            return dataFormat.success(
-                message='The password is writed'
-            )
-        else:
-
-            return dataFormat.error(
-                message=serializer.errors
-            )
-
-    def questions_answer(self,pk,model,request):
-        profiles=self.filter_profiles_object(pk)
-        answer=self.filter_answer_object(Profiles_id=profiles.id,Questions_id=request.data.get('Questions_id'))
-        data={
-            "Questions_id":request.data.get('Questions_id'),
-            "answer":request.data.get('answer'),
-            "Profiles_id":profiles.id
-        }
-        serializer=Quest_answersSerializer(answer,data=data)
-
-        if serializer.is_valid():
-            serializer.save()
-            print(serializer.data)
-            return dataFormat.success(
-                message='The Quest_answers is writed'
-            )
-        else:
-
-            return dataFormat.error(
-                message=serializer.errors
-            )
-
-def check_login(request):
-    """
-    input:  request
-    output:     data={
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                    "uid":user.id,
+            return {
+                    'message':'account is not existed!!'
                 }
-    """
-    result = authenticate(username=request.data.get('username'), password=request.data.get('password'))
-    if result is not None and result.is_active:
-        login(request, result)
-        user=User.objects.filter(username=result).first()
-        refresh = RefreshToken.for_user(user)
-
-        return dataFormat.success(
-            data={
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                "uid":user.id,
-            }
-        )
-    else:
-
-        return dataFormat.error(
-            message='account is fault' 
-        )
-
-def check_answer(request):
-    profiles=filter_profiles_object(request.data.get('uid')).first()
-
-    if profiles is not None:
-        quest_answers=Quest_answers.objects.filter(
-            Profiles_id=profiles.id,
-            Questions_id=request.data.get('Questions_id'),
-            answer=request.data.get('answer')).first()
-        print(quest_answers)
-
-        if quest_answers is None: 
-            return dataFormat.error(message="the answer is wrong!")
-        else:
-            return dataFormat.success(message="The answer is correct!")      
-    else:
-        raise Http404('Profile does not exist')
-
-
-def verify_account(request):
-    user=User.objects.filter(username=request.data.get('username')).first()
-    if user is not None:
-        return dataFormat.success(
-            data={
-                "uid":user.id    #id of currnt account
-            }
-        )
-    else:
-        return dataFormat.error(
-                message='account is not existed!!'
-            )
-
-
-
 
 class RegisterAccount():
     """
@@ -309,7 +181,7 @@ class RegisterAccount():
 
 
     def __initial_UIaccess(self):
-        "晚一點再寫"
+        "初始化 頁面權限資料"
 
         for record in UI:
             record.update({'Profiles_id':self.__data['Profiles_id']})
@@ -374,17 +246,20 @@ class RegisterAccount():
 
 
             transaction.savepoint_commit(sid)
-            return dataFormat.success(data={
-                    "uid":self.__data["profilesData"]['AuthUser_id']
-                },)
+            return {
+                    'type':'success', 
+                    'data':{
+                        "uid":self.__data["profilesData"]['AuthUser_id']
+                    }
+                }
         except ValueError as e:
             logging.error(e)
             transaction.savepoint_rollback(sid)
 
-            return dataFormat.error(message=self.__serializer.errors)
+            return {'message':self.__serializer.errors}
         except Exception as e:
             logging.error(e)
             transaction.savepoint_rollback(sid)
 
-            return dataFormat.error(message=self.__serializer.errors)
+            return {'message':self.__serializer.errors}
         

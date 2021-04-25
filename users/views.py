@@ -18,7 +18,7 @@ from rest_framework import status
 from users.models import Profiles,Departments,Questions,Quest_answers
 from users.serializers import ProfilesSerializer,QuestionsSerializer,DepartmentsSerializer,MyTokenRefreshSerializer,AuthUserSeriForProfiles
 
-from users.core import check_login,verify_account,RegisterAccount,check_answer,ResetAuthUser,AuthUserCore
+from users.core import RegisterAccount,AuthUserCore
 from utils.base import filter_profiles_object,DataFormat,get_model_object
 
 
@@ -59,28 +59,20 @@ class AuthUserDetailView(APIView):
     """
         Detail of account
     """  
-    permission_classes = [IsAuthenticated]
-        
-    def get(self, request, format=None):    
-        authUser= User.objects.all()    
-        serializer= AuthUserSeriForProfiles(authUser,many=True)
-        dataFormat=DataFormat()
-   
-        return Response(dataFormat.success(data=serializer.data), status=status.HTTP_200_OK)
+    # permission_classes = [IsAuthenticated]
     
     def put(self,request,pk,format=None):
         authUser = get_model_object(pk=pk,model=User)
-        # data={
-        #     'is_active':request.data.get('is_active',True)
-        #     'password':
-        # }
+        serializer = AuthUserSeriForProfiles(authUser, data=request.data)
+        dataFormat=DataFormat()
 
-
-        if request.data.get('is_active'):
-            print("aa")
-            # serializer=AuthUserSeriForProfiles(authUser,data=)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(dataFormat.success(data=serializer.data), status=status.HTTP_201_CREATED)
+        return Response(dataFormat.error(
+                message=serializer.errors
+            ),status=status.HTTP_400_BAD_REQUEST)
         
-
 
     def delete(self, request, pk, format=None): 
         authUser = get_model_object(pk=pk,model=User)
@@ -174,12 +166,14 @@ class LoginOutAccountView(APIView):
         """
         Login Account
         """
-        result = check_login(request)
+        authUserCore=AuthUserCore()
+        result=authUserCore.check_login(request)
+        dataFormat=DataFormat()
 
         if result['type'] == 'success':
-            return Response(result,status=status.HTTP_200_OK)
+            return Response(dataFormat.success(data=result['data']),status=status.HTTP_200_OK)
         else:
-            return Response(result,status=status.HTTP_200_OK)
+            return Response(dataFormat.error(message=result['message']),status=status.HTTP_200_OK)
 
     def get(self, request, format=None):
         """
@@ -194,11 +188,14 @@ class VerifyAccountView(APIView):
     Verify account
     """
     def post(self, request, format=None):
-        result=verify_account(request)
+        authUserCore=AuthUserCore()
+        result=authUserCore.verify_account(request)
+        dataFormat=DataFormat()
+
         if result['type'] == 'success':
-            return Response(result,status=status.HTTP_200_OK)
+            return Response(dataFormat.success(data=result['data']),status=status.HTTP_200_OK)
         else:
-            return Response(result,status=status.HTTP_200_OK)
+            return Response(dataFormat.error(message=result['message']),status=status.HTTP_400_BAD_REQUEST)
 
 class RegistrationView(APIView):
     
@@ -210,11 +207,12 @@ class RegistrationView(APIView):
 
         registerAccount=RegisterAccount(jsonData)
         result=registerAccount.process()
+        dataFormat=DataFormat()
 
         if result['type'] == 'success':
-            return Response(result,status=status.HTTP_201_CREATED)
+            return Response(dataFormat.success(data=result['data']),status=status.HTTP_201_CREATED)
         else:
-            return Response(result,status=status.HTTP_400_BAD_REQUEST)
+            return Response(dataFormat.error(message=result['message']),status=status.HTTP_400_BAD_REQUEST)
 
 class ResetPasswordView(APIView):
 
@@ -222,11 +220,18 @@ class ResetPasswordView(APIView):
         """
         reset password
         """
-        resetAuthUser=ResetAuthUser()
-        dataFormat=DataFormat()
-        questions_answer=resetAuthUser.questions_answer(pk=pk,model=Quest_answers,request=request)
+        authUserCore=AuthUserCore()
+
+        questions_answer=authUserCore.questions_answer(pk=pk,request=request)
         
-        password=resetAuthUser.password(pk=pk,model=User,request=request)
+        password=authUserCore.reset_password(pk=pk,request=request)
+
+
+        # resetAuthUser=ResetAuthUser()
+        dataFormat=DataFormat()
+        # questions_answer=resetAuthUser.questions_answer(pk=pk,model=Quest_answers,request=request)
+        
+        # password=resetAuthUser.password(pk=pk,model=User,request=request)
 
 
         if password['type'] == 'success' and questions_answer['type'] == 'success':
@@ -262,15 +267,16 @@ class QuestionslistView(APIView):
 class VerifyAnswerView(APIView):
 
     def post(self, request, format=None):
-        print(request)
 
         try:
-            result = check_answer(request)
+            authUserCore=AuthUserCore()
+            result = authUserCore.check_answer(request)
+            dataFormat=DataFormat()
 
             if result['type'] == 'success':
-                return Response(result,status=status.HTTP_200_OK)
+                return Response(dataFormat.success(message=result['message']),status=status.HTTP_200_OK)
             else:
-                return Response(result,status=status.HTTP_200_OK)
+                return Response(dataFormat.success(message=result['message']),status=status.HTTP_200_OK)
         except Exception as e:
             logging.error(e)
             dataFormat=DataFormat()
@@ -281,7 +287,6 @@ class DepartmentslistView(APIView):
     List all snippets, or create a new snippet.
     """
     permission_classes = [IsAuthenticated]
-    dataFormat=DataFormat()
 
     def get(self, request, format=None):
         departments = Departments.objects.all()

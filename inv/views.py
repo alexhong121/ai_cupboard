@@ -201,11 +201,3 @@ class Current_quantity(APIView):
             })
 
         return Response(content(types='success',data=data), status=status.HTTP_200_OK)
-
-class Change_report(APIView):
-    def post(self, request,format=None):
-        pass
-
-class search_product(APIView):
-    def get(self, request,format=None):
-        pass
